@@ -1,0 +1,12 @@
+*.DS_*
+example*/*
+!example*/src
+!example*/bin/data
+!example*/README.md
+*.db
+*.db-shm
+*.db-wal
+*.opendb
+*.dll
+*.filters
+*.user
