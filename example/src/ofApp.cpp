@@ -59,35 +59,35 @@ void ofApp::draw() {
 
     // 現在のテスト文字列を表示
     ofSetColor(255);
+	y += fontSmall.getLineHeight();
     fontSmall.drawString("Small (16px):", 20, y);
-    y += 25;
     ofSetColor(255);
+	y += fontSmall.getLineHeight();
     fontSmall.drawString(currentStr, 40, y);
-    y += 40;
 
     ofSetColor(255);
+	y += fontSmall.getLineHeight();
     fontSmall.drawString("Medium (32px):", 20, y);
-    y += 25;
     ofSetColor(255);
+	y += fontMedium.getLineHeight();
     fontMedium.drawString(currentStr, 40, y);
-    y += 60;
 
     ofSetColor(255);
+	y += fontSmall.getLineHeight();
     fontSmall.drawString("Large (64px):", 20, y);
-    y += 25;
     ofSetColor(255);
+	y += fontLarge.getLineHeight();  // Largeのベースライン分を確保
     fontLarge.drawString(currentStr, 40, y);
-    y += 100;
 
     // 共有テスト
     ofSetColor(200, 255, 200);
+	y += fontSmall.getLineHeight();
     fontSmall.drawString("共有テスト (同じフォント・サイズの2インスタンス):", 20, y);
-    y += 30;
     ofSetColor(255);
+	y += fontMedium.getLineHeight() + 5;
     fontShared1.drawString("Instance 1: " + currentStr.substr(0, 10), 40, y);
-    y += 40;
+	y += fontMedium.getLineHeight() + 5;
     fontShared2.drawString("Instance 2: " + currentStr.substr(0, 10), 40, y);
-    y += 60;
 
     // 統計表示
     if (showStats) {

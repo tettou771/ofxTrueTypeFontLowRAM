@@ -108,9 +108,12 @@ FontAtlasManager::FontAtlasManager() {
 }
 
 FontAtlasManager::~FontAtlasManager() {
-    if (face) {
-        releaseFreeType();
-    }
+    // 終了時のstatic変数破棄順序の問題を避けるため、
+    // FT_Done_Faceは呼ばない（OSがプロセス終了時にクリーンアップする）
+    // face.reset()を呼ぶとshared_ptrのデリータが動いてFT_Done_Faceが呼ばれてしまう
+    // ので、ここでは何もしない
+    //
+    // 注意: 動的にフォントをロード/アンロードする場合は別途対応が必要
 }
 
 int FontAtlasManager::getMaxTextureSize() {
@@ -164,8 +167,12 @@ bool FontAtlasManager::setup(const of::filesystem::path& fontPath, int size, boo
     }
 
     // shared_ptrで管理
+    // 注意: プログラム終了時、static変数の破棄順序が不定のため
+    // ftLibraryがnullptrの場合はFT_Done_Faceを呼ばない
     face = shared_ptr<FT_FaceRec_>(rawFace, [](FT_Face f) {
-        FT_Done_Face(f);
+        if (ftLibrary != nullptr) {
+            FT_Done_Face(f);
+        }
     });
 
     // フォントサイズ設定
@@ -313,16 +320,17 @@ bool FontAtlasManager::rasterizeGlyph(uint32_t codepoint, ofPixels& outPixels, L
     int width = bitmap.width;
     int height = bitmap.rows;
 
-    // プロパティ設定
+    // プロパティ設定（ofTrueTypeFontと同じ計算方法）
     outProps.width = int26p6_to_dbl(face->glyph->metrics.width);
     outProps.height = int26p6_to_dbl(face->glyph->metrics.height);
     outProps.bearingX = int26p6_to_dbl(face->glyph->metrics.horiBearingX);
     outProps.bearingY = int26p6_to_dbl(face->glyph->metrics.horiBearingY);
     outProps.advance = int26p6_to_dbl(face->glyph->metrics.horiAdvance);
-    outProps.xmin = outProps.bearingX;
-    outProps.xmax = outProps.bearingX + outProps.width;
-    outProps.ymin = outProps.bearingY - outProps.height;
-    outProps.ymax = outProps.bearingY;
+    // xmin/ymin/xmax/ymaxはbitmap_left/bitmap_topから計算（重要！）
+    outProps.xmin = face->glyph->bitmap_left;
+    outProps.xmax = outProps.xmin + outProps.width;
+    outProps.ymin = -face->glyph->bitmap_top;  // マイナスが重要
+    outProps.ymax = outProps.ymin + outProps.height;
     outProps.tW = width;
     outProps.tH = height;
 
