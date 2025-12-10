@@ -649,6 +649,9 @@ bool ofxTrueTypeFontLowRAM::load(const of::filesystem::path& filename,
 }
 
 bool ofxTrueTypeFontLowRAM::load(const ofTrueTypeFontSettings& s) {
+    if (!s.ranges.empty()) {
+        ofLogWarning("ofxTrueTypeFontLowRAM") << "Unicode ranges are ignored. This addon uses lazy loading, so all glyphs are loaded on demand regardless of range settings.";
+    }
     return load(s.fontName, s.fontSize, s.antialiased, true, s.contours, s.simplifyAmt, s.dpi);
 }
 
