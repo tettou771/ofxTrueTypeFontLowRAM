@@ -180,6 +180,11 @@ public:
     // 描画（オーバーライドではなく隠蔽）
     void drawString(const string& s, float x, float y) const;
 
+    // 文字列サイズ計算（隠蔽）
+    float stringWidth(const string& s) const;
+    float stringHeight(const string& s) const;
+    ofRectangle getStringBoundingBox(const string& s, float x, float y, bool vflip = true) const;
+
     // メッシュ取得
     const ofMesh& getStringMesh(const string& s, float x, float y, bool vFlipped = true) const;
 

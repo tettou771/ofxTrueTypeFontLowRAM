@@ -798,6 +798,70 @@ void ofxTrueTypeFontLowRAM::drawString(const string& s, float x, float y) const 
     glBlendFunc(blendSrc, blendDst);
 }
 
+float ofxTrueTypeFontLowRAM::stringWidth(const string& s) const {
+    if (!bLoadedOk || !atlasManager) return 0;
+
+    float w = 0;
+    iterateStringInternal(s, 0, 0, false, [&](uint32_t c, glm::vec2 pos) {
+        float cWidth = 0;
+        if (settings.direction == OF_TTF_LEFT_TO_RIGHT) {
+            if (c == '\t') {
+                cWidth = atlasManager->getSpaceAdvance() * spaceSize * 4;  // TAB_WIDTH = 4
+            } else {
+                const LazyGlyphProps* props = atlasManager->getOrLoadGlyph(c);
+                if (props) {
+                    cWidth = props->advance;
+                }
+            }
+        }
+        w = max(w, abs(pos.x + cWidth));
+    });
+    return w;
+}
+
+float ofxTrueTypeFontLowRAM::stringHeight(const string& s) const {
+    return getStringBoundingBox(s, 0, 0).height;
+}
+
+ofRectangle ofxTrueTypeFontLowRAM::getStringBoundingBox(const string& s, float x, float y, bool vflip) const {
+    if (!bLoadedOk || !atlasManager || s.empty()) {
+        return ofRectangle(x, y, 0, 0);
+    }
+
+    float minX = x;
+    float minY = y;
+    float maxY = y;
+    float w = 0;
+
+    iterateStringInternal(s, x, y, vflip, [&](uint32_t c, glm::vec2 pos) {
+        const LazyGlyphProps* props = atlasManager->getOrLoadGlyph(c);
+        if (!props) return;
+
+        float cWidth = 0;
+        if (settings.direction == OF_TTF_LEFT_TO_RIGHT) {
+            if (c == '\t') {
+                cWidth = atlasManager->getSpaceAdvance() * spaceSize * 4;
+            } else {
+                cWidth = props->advance;
+            }
+        }
+
+        w = max(w, abs(pos.x - x) + cWidth);
+        minX = min(minX, pos.x);
+
+        if (vflip) {
+            minY = min(minY, pos.y - (props->ymax - props->ymin));
+            maxY = max(maxY, pos.y - (props->bearingY - props->height));
+        } else {
+            minY = min(minY, pos.y - props->ymax);
+            maxY = max(maxY, pos.y - props->ymin);
+        }
+    });
+
+    float height = maxY - minY;
+    return ofRectangle(minX, minY, w, height);
+}
+
 const ofMesh& ofxTrueTypeFontLowRAM::getStringMesh(const string& s, float x, float y, bool vFlipped) const {
     tempMesh.clear();
     tempMesh.setMode(OF_PRIMITIVE_TRIANGLES);
