@@ -21,7 +21,7 @@ openFrameworks用の省メモリTrueTypeFontアドオン。日本語など大規
 
 ```bash
 cd openframeworks/addons
-git clone https://github.com/yourname/ofxTrueTypeFontLowRAM.git
+git clone https://github.com/tettou771/ofxTrueTypeFontLowRAM.git
 ```
 
 ## 使い方
