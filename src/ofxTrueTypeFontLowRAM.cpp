@@ -775,9 +775,11 @@ void ofxTrueTypeFontLowRAM::drawString(const string& s, float x, float y) const 
 
     // ブレンド設定を保存
     bool blendEnabled = glIsEnabled(GL_BLEND);
-    GLint blendSrc, blendDst;
-    glGetIntegerv(GL_BLEND_SRC_ALPHA, &blendSrc);
-    glGetIntegerv(GL_BLEND_DST_ALPHA, &blendDst);
+    GLint blendSrcRGB, blendDstRGB, blendSrcAlpha, blendDstAlpha;
+    glGetIntegerv(GL_BLEND_SRC_RGB, &blendSrcRGB);
+    glGetIntegerv(GL_BLEND_DST_RGB, &blendDstRGB);
+    glGetIntegerv(GL_BLEND_SRC_ALPHA, &blendSrcAlpha);
+    glGetIntegerv(GL_BLEND_DST_ALPHA, &blendDstAlpha);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -795,7 +797,7 @@ void ofxTrueTypeFontLowRAM::drawString(const string& s, float x, float y) const 
     if (!blendEnabled) {
         glDisable(GL_BLEND);
     }
-    glBlendFunc(blendSrc, blendDst);
+    glBlendFuncSeparate(blendSrcRGB, blendDstRGB, blendSrcAlpha, blendDstAlpha);
 }
 
 float ofxTrueTypeFontLowRAM::stringWidth(const string& s) const {
