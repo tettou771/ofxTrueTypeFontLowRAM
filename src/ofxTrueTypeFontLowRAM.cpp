@@ -19,7 +19,7 @@ static int ftLibraryRefCount = 0;
 static bool initFreeType() {
     if (ftLibrary == nullptr) {
         if (FT_Init_FreeType(&ftLibrary)) {
-            ofLogError("ofxTrueTypeFontLowRAM") << "FreeTypeライブラリの初期化に失敗";
+            ofLogError("ofxTrueTypeFontLowRAM") << "Failed to initialize FreeType library";
             return false;
         }
     }
@@ -91,7 +91,7 @@ static of::filesystem::path resolveFontPath(const of::filesystem::path& fontPath
 
     of::filesystem::path systemPath = osxFontPathByName(fontName);
     if (!systemPath.empty() && of::filesystem::exists(systemPath)) {
-        ofLogNotice("ofxTrueTypeFontLowRAM") << "システムフォントを使用: " << systemPath;
+        ofLogVerbose("ofxTrueTypeFontLowRAM") << "Using system font: " << systemPath;
         return systemPath;
     }
 #endif
@@ -138,7 +138,7 @@ bool FontAtlasManager::setup(const of::filesystem::path& fontPath, int size, boo
 
     // 最大テクスチャサイズを取得
     maxAtlasSize = getMaxTextureSize();
-    ofLogNotice("ofxTrueTypeFontLowRAM") << "最大テクスチャサイズ: " << maxAtlasSize;
+    ofLogVerbose("ofxTrueTypeFontLowRAM") << "Max texture size: " << maxAtlasSize;
 
     // 最小サイズは fontSize * 4
     minAtlasSize = max(64, fontSize * 4);
@@ -147,12 +147,12 @@ bool FontAtlasManager::setup(const of::filesystem::path& fontPath, int size, boo
     while (s < minAtlasSize) s *= 2;
     minAtlasSize = s;
 
-    ofLogNotice("ofxTrueTypeFontLowRAM") << "初期アトラスサイズ: " << minAtlasSize;
+    ofLogVerbose("ofxTrueTypeFontLowRAM") << "Initial atlas size: " << minAtlasSize;
 
     // フォントファイルを探す（システムフォント対応）
     of::filesystem::path resolvedPath = resolveFontPath(fontPath);
     if (resolvedPath.empty()) {
-        ofLogError("ofxTrueTypeFontLowRAM") << "フォントが見つからない: " << fontPath;
+        ofLogError("ofxTrueTypeFontLowRAM") << "Font not found: " << fontPath;
         releaseFreeType();
         return false;
     }
@@ -161,7 +161,7 @@ bool FontAtlasManager::setup(const of::filesystem::path& fontPath, int size, boo
     FT_Face rawFace;
     FT_Error err = FT_New_Face(ftLibrary, resolvedPath.string().c_str(), 0, &rawFace);
     if (err) {
-        ofLogError("ofxTrueTypeFontLowRAM") << "フォントのロードに失敗: " << fontPath;
+        ofLogError("ofxTrueTypeFontLowRAM") << "Failed to load font: " << fontPath;
         releaseFreeType();
         return false;
     }
@@ -242,11 +242,11 @@ bool FontAtlasManager::expandAtlas(size_t atlasIndex) {
     int newSize = state.width * 2;
 
     if (newSize > maxAtlasSize) {
-        ofLogWarning("ofxTrueTypeFontLowRAM") << "アトラスが最大サイズに達した、新しいアトラスを作成";
+        ofLogWarning("ofxTrueTypeFontLowRAM") << "Atlas reached max size, creating new atlas";
         return false;  // 拡張不可、新しいアトラスが必要
     }
 
-    ofLogNotice("ofxTrueTypeFontLowRAM") << "アトラスを拡張: " << state.width << " -> " << newSize;
+    ofLogVerbose("ofxTrueTypeFontLowRAM") << "Expanding atlas: " << state.width << " -> " << newSize;
 
     // 新しいピクセルバッファを作成
     ofPixels newPixels;
@@ -305,7 +305,7 @@ bool FontAtlasManager::rasterizeGlyph(uint32_t codepoint, ofPixels& outPixels, L
 
     FT_Error err = FT_Load_Glyph(face.get(), glyphIndex, FT_LOAD_NO_HINTING);
     if (err) {
-        ofLogWarning("ofxTrueTypeFontLowRAM") << "グリフのロードに失敗: " << codepoint;
+        ofLogWarning("ofxTrueTypeFontLowRAM") << "Failed to load glyph: " << codepoint;
         return false;
     }
 
@@ -616,7 +616,7 @@ bool ofxTrueTypeFontLowRAM::load(const of::filesystem::path& filename,
                                   float simplifyAmt,
                                   int dpi) {
     if (makeContours) {
-        ofLogWarning("ofxTrueTypeFontLowRAM") << "makeContoursは未サポート";
+        ofLogWarning("ofxTrueTypeFontLowRAM") << "makeContours is not supported";
     }
 
     // キャッシュキー作成
@@ -767,7 +767,7 @@ void ofxTrueTypeFontLowRAM::createStringMeshInternal(const string& s, float x, f
 
 void ofxTrueTypeFontLowRAM::drawString(const string& s, float x, float y) const {
     if (!bLoadedOk || !atlasManager) {
-        ofLogError("ofxTrueTypeFontLowRAM") << "drawString(): フォントがロードされていない";
+        ofLogError("ofxTrueTypeFontLowRAM") << "drawString(): Font not loaded";
         return;
     }
 
